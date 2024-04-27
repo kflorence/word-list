@@ -2,293 +2,140 @@
 const fs = require('fs');
 const got = require('got');
 
-const isVerbose = process.argv.includes('--verbose');
+const remove = [
+	'bulldyke*',
+	'cummin*',
+	'dyke*',
+	'dyki*',
+	'faggot*',
+	'kike*',
+	'nigger*',
+	'raghead*',
+	'shemale*',
+	'spic',
+	'spics',
+	'towelhead*',
+	'tranny',
+	'wetback*'
+];
 
-const {array: badWords} = require('badwords-list');
-const leoProfanity = require('leo-profanity');
-
-leoProfanity.loadDictionary('en');
-
-const badWordsSet = new Set(badWords);
-
-const ourBadWordsSet = new Set([
-	'anuses',
-	'arsed',
-	'arseholes',
-	'autoeroticism',
-	'autoeroticisms',
-	'autoerotism',
-	'autoerotisms',
-	'bitched',
-	'bitchfest',
-	'bitchfests',
-	'bitchier',
-	'bitchiest',
-	'bitchiness',
-	'bitchinesses',
-	'bitchy',
-	'boners',
-	'bukkakes',
-	'bullshits',
-	'bullshitted',
-	'bullshitter',
-	'bullshitters',
-	'bullshitting',
-	'bullshittings',
-	'bumfuck',
-	'bumfucks',
-	'clitorises',
-	'cocksuckers',
-	'coprophiliac',
-	'coprophiliacs',
-	'coprophilias',
-	'coprophilic',
-	'coprophilous',
-	'cunnilinguses',
-	'cunted',
-	'cunting',
-	'cuntish',
-	'cunty',
-	'dickheads',
-	'dildoe',
-	'dildoes',
-	'dominatrixes',
-	'ejaculations',
-	'ejaculative',
-	'ejaculator',
-	'erotica',
-	'erotical',
-	'erotically',
-	'erotised',
-	'erotises',
-	'erotising',
-	'erotisms',
-	'erotization',
-	'erotizations',
-	'feces',
-	'fellated',
-	'fellates',
-	'fellating',
-	'fellation',
-	'fellations',
-	'fellatios',
-	'fuckwits',
-	'gangbanger',
-	'gangbangers',
-	'gangbanging',
-	'goddam',
-	'goddammed',
-	'goddamming',
-	'goddamndest',
-	'goddamning',
-	'goddamns',
-	'handjobs',
-	'hardcores',
-	'homoeroticism',
-	'homoeroticisms',
-	'homoerotism',
-	'hookers',
-	'hornier',
-	'hornily',
-	'horniness',
-	'horninesses',
-	'incests',
-	'intercourses',
-	'jailbaits',
-	'jigaboos',
-	'jisms',
-	'jissom',
-	'jissoms',
-	'jizzes',
-	'kikes',
-	'lovemaker',
-	'lovemakers',
-	'lovemakings',
-	'masochism',
-	'masochisms',
-	'masochistic',
-	'masochistically',
-	'masochists',
-	'masturbated',
-	'masturbates',
-	'masturbating',
+const profanity = [
+	'anilingus*',
+	'arsehole*',
+	'asshole*',
+	'autoerotic*',
+	'bastard*',
+	'bestiality',
+	'blowjob*',
+	'bitch*',
+	'boner*',
+	'clit',
+	'clito*',
+	'clits',
+	'cocksuck*',
+	'cocktease*',
+	'cuck',
+	'cucking',
+	'cuckold*',
+	'cum',
+	'cums',
+	'cunt*',
+	'dick',
+	'dicks',
+	'dickhead*',
+	'dildo*',
+	'ejaculat*',
+	'felch*',
+	'fellat*',
+	'*fuck*',
+	'genital*',
+	'homoeroti*',
+	'handjob*',
+	'honky',
+	'honkey*',
+	'hooker*',
+	'incest*',
+	'jizz*',
+	'lovemak*',
+	'masturbat*',
+	'milf',
 	'milfs',
-	'mofos',
-	'nazification',
-	'nazifications',
-	'nazified',
-	'negroes',
-	'negrohead',
-	'negroheads',
-	'niggardlinesses',
-	'niggardly',
-	'niggards',
-	'niggerdom',
-	'niggerdoms',
-	'niggered',
-	'niggerisms',
-	'niggerling',
-	'niggerlings',
-	'niggery',
-	'nippled',
-	'nudeness',
-	'nudenesses',
-	'nudist',
-	'nudists',
-	'nudities',
-	'orgasmed',
-	'orgasmic',
-	'orgasmically',
-	'orgasming',
-	'paedophiles',
-	'paedophilia',
-	'paedophiliac',
-	'peckers',
-	'pedophiles',
-	'pedophilia',
-	'pedophiliac',
-	'peggings',
-	'penises',
-	'playboys',
-	'pooed',
-	'pooped',
-	'pooper',
-	'poopers',
-	'pornier',
-	'porniest',
-	'pornification',
-	'pornifications',
-	'pornocracies',
-	'pornocracy',
-	'pornographer',
-	'pornographers',
-	'pornographic',
-	'pornographically',
-	'pornographies',
-	'pornotopia',
-	'pornotopian',
-	'pornotopias',
-	'quims',
-	'ragheads',
-	'raped',
-	'raper',
-	'rapers',
-	'rapists',
-	'rectums',
-	'retardant',
-	'retardants',
-	'rimmings',
-	'sadisms',
-	'sadistic',
-	'sadistically',
-	'sadists',
-	'schlongs',
-	'scrotums',
-	'semens',
-	'shaggable',
-	'shagged',
-	'shaggedness',
-	'shaggednesses',
-	'shemales',
-	'shitface',
-	'shitfaced',
-	'shitfaces',
-	'shitheads',
-	'shithole',
-	'shitholes',
-	'shitload',
-	'shitloads',
-	'shittier',
-	'shittiest',
-	'shittily',
-	'sodomized',
-	'sodomizes',
-	'sodomizing',
-	'strappadoed',
-	'strappadoes',
-	'strappadoing',
-	'sucked',
-	'sucky',
-	'swastikas',
-	'swingers',
-	'testicles',
-	'testicular',
-	'testiculate',
-	'threesomes',
-	'tittie',
-	'toplessness',
-	'toplessnesses',
-	'towelheads',
-	'tribadisms',
+	'*orgasm*',
+	'orgy',
+	'outbitch*',
+	'pedophil*',
+	'piss*',
+	'poontang*',
+	'poop*',
+	'porn*',
+	'pubes',
+	'punan*',
+	'pussy',
+	'rape',
+	'rapes',
+	'raping',
+	'rapist*',
+	'sadism*',
+	'semen*',
+	'*shit*',
+	'schlong*',
+	'slut',
+	'sluts',
+	'slutt*',
+	'sodom*',
+	'sonofabitch',
+	'strappado*',
+	'superbitch*',
+	'swinger*',
+	'threesome*',
+	'tittie*',
+	'titty',
+	'tribadism*',
+	'twat',
 	'twats',
-	'undress',
-	'undressed',
-	'undresses',
-	'undressings',
-	'vaginae',
-	'vaginal',
-	'vaginally',
-	'vibrators',
-	'voyeurism',
-	'voyeurisms',
-	'vulvae',
-	'wanked',
-	'wankers',
-	'wankier',
-	'wankiest',
-	'wetbacks',
-	'whored',
-	'whoredom',
-	'whoredoms',
-	'zoophile',
-	'zoophiles',
-	'zoophilias',
-	'zoophilic',
-	'zoophilies'
-]);
+	'twink',
+	'twinkie',
+	'twinkling',
+	'twinks',
+	'vibrator*',
+	'vulva*',
+	'wank*',
+	'zoophile*',
+	'zoophilia*',
+];
 
 const url = 'https://raw.githubusercontent.com/atebits/Words/master/Words/en.txt';
 
-const filters = [
-	{
-		name: 'leo-profanity',
-		getReason: word => leoProfanity.check(word) ? 'is marked bad by leo-profanity' : undefined
-	},
-	{
-		name: 'badwords-list exact',
-		getReason: word => badWordsSet.has(word) ? 'is in badwords-list' : undefined
-	},
-	{
-		name: 'our bad words list',
-		getReason: word => ourBadWordsSet.has(word) ? 'is in our bad words list' : undefined
+function matches(word, glob) {
+	const endsWith = glob.startsWith('*')
+	const startsWith = glob.endsWith('*')
+	if (endsWith && startsWith) {
+		return word.includes(glob.slice(1, -1))
+	} else if (startsWith) {
+		return word.startsWith(glob.slice(0, -1))
+	} else if (endsWith) {
+		return word.endsWith(glob.slice(1))
+	} else {
+		return word === glob
 	}
-];
+}
 
 (async () => {
 	const {body} = await got(url);
-	let words = body.trim().split('\n');
-
-	const originalLength = words.length;
-
-	for (const filter of filters) {
-		const previousLength = words.length;
-
-		words = words.filter(word => {
-			const reason = filter.getReason(word);
-
-			if (reason !== undefined && isVerbose) {
-				console.log(`word \`${word}\` excluded because it ${reason}`);
+	const wordsProfanity = [];
+	const words = body.trim().split('\n')
+		.filter((word) => word.length >= 3)
+		.filter((word) => !remove.some((glob) => matches(word, glob)))
+		.filter((word) => {
+			const isProfanity = profanity.some((glob) => matches(word, glob));
+			if (isProfanity) {
+				wordsProfanity.push(word);
 			}
-
-			return reason === undefined;
+			return !isProfanity;
 		});
 
-		console.log(`filtered ${previousLength - words.length} bad words with filter '${filter.name}'`);
-	}
-
-	console.log(`filtered ${originalLength - words.length} bad words total out of ${originalLength} original words`);
-
 	fs.writeFileSync('words.txt', words.join('\n'));
+	fs.writeFileSync('words-profanity.txt', wordsProfanity.join('\n'));
 })().catch(error => {
 	console.error(error);
 	process.exit(1); // eslint-disable-line unicorn/no-process-exit
