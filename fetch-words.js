@@ -2,6 +2,11 @@
 const fs = require('fs');
 const got = require('got');
 
+const add = [
+	'blep',
+	'yeet'
+]
+
 const remove = [
 	'bulldyke*',
 	'cummin*',
@@ -134,8 +139,8 @@ function matches(word, glob) {
 			return !isProfanity;
 		});
 
-	fs.writeFileSync('words.txt', words.join('\n'));
-	fs.writeFileSync('words-profanity.txt', wordsProfanity.join('\n'));
+	fs.writeFileSync('words.txt', words.concat(add).sort().join('\n'));
+	fs.writeFileSync('words-profanity.txt', wordsProfanity.sort().join('\n'));
 })().catch(error => {
 	console.error(error);
 	process.exit(1); // eslint-disable-line unicorn/no-process-exit

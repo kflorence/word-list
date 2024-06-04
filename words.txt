@@ -24119,6 +24119,7 @@ blenny
 blent
 bleomycin
 bleomycins
+blep
 blepharism
 blepharisms
 blepharitic
@@ -138065,10 +138066,10 @@ manky
 manless
 manlier
 manliest
+manlihood
 manlike
 manlikely
 manlily
-manlihood
 manliness
 manlinesses
 manly
@@ -215803,8 +215804,8 @@ sharpshooting
 sharpshootings
 sharpy
 sharrow
-sharrows
 sharrowed
+sharrows
 shart
 sharted
 sharter
@@ -272589,6 +272590,7 @@ yeeding
 yeeds
 yeelin
 yeelins
+yeet
 yegg
 yeggman
 yeggmen
